@@ -1,20 +1,22 @@
 package com.example.alarm;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
 
     private AlarmManager alarmManager;
     private TimePicker timePicker;
@@ -30,14 +32,12 @@ public class MainActivity extends AppCompatActivity {
         this.timePicker = findViewById(R.id.Timepicker);
 
 
-
-        
         findViewById(R.id.btnStart).setOnClickListener(mClickListener);
         findViewById(R.id.btnStop).setOnClickListener(mClickListener);
     }
 
     /* 알람 시작 */
-    private void start(){
+    private void start() {
         //시간 설정
         Calendar calendar = Calendar.getInstance();     //현재 시간을 받음
 
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         calendar.set(Calendar.SECOND, 0);
 
         //현재시간보다 이전이면
-        if(calendar.before(Calendar.getInstance())){
+        if (calendar.before(Calendar.getInstance())) {
             //다음날로 설정
             calendar.add(Calendar.DATE, 1);
         }
@@ -56,20 +56,21 @@ public class MainActivity extends AppCompatActivity {
         //state 값이 on 이면 알람시작, off 이면 중지
         intent.putExtra("state", "on");
 
-        this.pendingIntent = PendingIntent.getBroadcast(this,0,intent,PendingIntent.FLAG_UPDATE_CURRENT); //이전에 생선한 PendingIntent는 취소하고 새로 만듦
+        this.pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE); //이전에 생선한 PendingIntent는 취소하고 새로 만듦
 
         //알람 설정
         this.alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+        Log.d(TAG, "alarm start() : " + calendar.getTimeInMillis());
 
         //Toast 보여주기 (알람 시간 표시)
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        Toast.makeText(this,"Alarm : " + format.format(calendar.getTime()), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Alarm : " + format.format(calendar.getTime()), Toast.LENGTH_SHORT).show();
 
     }
 
     /* 알람 중지 */
-    private void stop(){
-        if(this.pendingIntent == null){
+    private void stop() {
+        if (this.pendingIntent == null) {
             return;
         }
 
@@ -78,11 +79,11 @@ public class MainActivity extends AppCompatActivity {
 
         //알람 중지 Broadcast
         Intent intent = new Intent(this, AlarmReceiver.class);
-        intent.putExtra("state","off");
+        intent.putExtra("state", "off");
 
         sendBroadcast(intent);
 
-        this.pendingIntent=null;
+        this.pendingIntent = null;
 
     }
 
